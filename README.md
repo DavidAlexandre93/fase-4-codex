@@ -2,11 +2,9 @@
 
 Este repositório contém a aplicação mobile da plataforma de blogging, desenvolvida com **React Native + Expo** na pasta `mobile/`.
 
-A interface foi organizada para atender os requisitos acadêmicos de:
-- leitura e busca de posts;
-- criação/edição/administração de postagens (docentes);
-- CRUD administrativo de docentes e alunos(as);
-- autenticação e autorização por perfil.
+A aplicação implementa autenticação, autorização por perfil (`teacher`/`student`), leitura e busca de posts, criação/edição de conteúdo para docentes e CRUD administrativo de docentes e estudantes.
+
+---
 
 ## ✅ Requisitos funcionais atendidos
 
@@ -42,20 +40,27 @@ A interface foi organizada para atender os requisitos acadêmicos de:
 - **React Native** com **Expo**
 - **TypeScript**
 - **React Navigation** (Stack + Bottom Tabs)
-- **Context API** para estado de autenticação
+- **Context API** para estado global de autenticação
 - **AsyncStorage** para persistência de sessão
 - Cliente HTTP com `fetch` centralizado (`apiRequest`)
 
 ---
 
-## ▶️ Setup e execução
+## 🚀 Setup inicial (ambiente de desenvolvimento)
 
-### Pré-requisitos
-- Node.js 18+
-- npm 9+
-- Expo CLI (`npm install -g expo-cli`) *(opcional, também pode usar npx)*
+### 1) Pré-requisitos
 
-### Passos
+- **Node.js 18+**
+- **npm 9+**
+- **Expo CLI** (opcional):
+
+```bash
+npm install -g expo-cli
+```
+
+> Você também pode usar somente `npx expo` sem instalação global.
+
+### 2) Instalação e execução
 
 ```bash
 cd mobile
@@ -63,47 +68,94 @@ npm install
 npm run start
 ```
 
-Depois, abra no:
-- **Expo Go** (Android/iOS) via QR Code; ou
-- emulador/simulador configurado.
+Scripts disponíveis em `mobile/package.json`:
 
----
+- `npm run start` → inicia o Expo Dev Server.
+- `npm run android` → abre no emulador Android.
+- `npm run ios` → abre no simulador iOS (macOS).
+- `npm run web` → executa a versão web (quando disponível).
 
-## 🗂️ Arquitetura do projeto
+### 3) Conexão com a API
 
-```text
-mobile/
-├── App.tsx                        # Bootstrap da aplicação
-├── src/
-│   ├── api/client.ts              # Cliente REST (headers + token)
-│   ├── components/                # Componentes reutilizáveis de UI
-│   ├── context/AuthContext.tsx    # Sessão, login, logout e roles
-│   ├── navigation/                # Navegação principal (Stack/Tabs)
-│   ├── screens/                   # Telas de negócio
-│   ├── types/                     # Tipos globais
-│   └── utils/constants.ts         # Rotas e API base URL
-└── package.json
-```
-
-### Organização de navegação
-- Usuário **não autenticado**: tela de login.
-- Usuário **autenticado**: acesso às tabs.
-- Perfil **teacher**: tabs administrativas (Docentes, Alunos, Admin) + telas de criação/edição.
-- Perfil **student**: somente visualização de posts e leitura.
-
----
-
-## 🔌 Integração com back-end
-
-Defina a URL da API em `mobile/src/utils/constants.ts`:
+A URL base está em `mobile/src/utils/constants.ts`:
 
 ```ts
 export const API_BASE_URL = 'http://localhost:3000';
 ```
 
-> Em dispositivo físico, substitua `localhost` pelo IP da máquina que executa o back-end.
+- Em **emulador Android**, `localhost` geralmente funciona com redirecionamento local.
+- Em **dispositivo físico**, use o IP da máquina na rede local, por exemplo:
+
+```ts
+export const API_BASE_URL = 'http://192.168.0.10:3000';
+```
+
+### 4) Validação rápida pós-setup
+
+1. Inicie o back-end da disciplina.
+2. Inicie o app com `npm run start`.
+3. Faça login com usuário válido.
+4. Abra a aba de posts e valide carregamento da lista.
+
+---
+
+## 🗂️ Arquitetura da aplicação
+
+### Visão geral de diretórios
+
+```text
+mobile/
+├── App.tsx                        # Bootstrap do app
+├── src/
+│   ├── api/client.ts              # Cliente REST + token bearer
+│   ├── components/                # Componentes reutilizáveis (botão, campo, card, gate de perfil)
+│   ├── context/AuthContext.tsx    # Sessão, login/logout, carregamento de usuário e role
+│   ├── navigation/                # Navegação principal (Stack/Tabs)
+│   ├── screens/                   # Telas de negócio (Posts, Admin, Docentes, Alunos)
+│   ├── types/                     # Tipos globais da aplicação
+│   └── utils/constants.ts         # Constantes de URL/endpoints
+├── app.json                       # Configuração Expo
+└── package.json                   # Dependências e scripts
+```
+
+### Camadas e responsabilidades
+
+- **Presentation (screens/components)**
+  - Renderização de UI.
+  - Captura de entrada de formulário.
+  - Chamada das funções de API para operações CRUD.
+- **Navigation (stack + tabs)**
+  - Decide fluxo autenticado vs não autenticado.
+  - Define rotas administrativas por perfil.
+- **State/Auth (`AuthContext`)**
+  - Guarda token, usuário e papel.
+  - Persiste sessão no `AsyncStorage`.
+  - Fornece funções `signIn`/`signOut` para toda a árvore.
+- **Data access (`api/client.ts`)**
+  - Centraliza requisições HTTP.
+  - Injeta headers e token de autenticação.
+  - Padroniza tratamento de erro de API.
+
+### Fluxo de autenticação
+
+1. Usuário envia credenciais na tela de login.
+2. App chama `POST /auth/login`.
+3. Em sucesso, token e dados do usuário são salvos no contexto + `AsyncStorage`.
+4. Navegação alterna para rotas autenticadas.
+5. Em logout, dados de sessão são limpos e o usuário retorna ao fluxo público.
+
+### Estratégia de autorização
+
+- O papel do usuário (`teacher`/`student`) é validado no client.
+- Itens administrativos e ações destrutivas aparecem apenas para `teacher`.
+- Componentes de proteção (ex.: `TeacherOnly`) isolam regras de permissão.
+
+---
+
+## 🔌 Integração com back-end
 
 ### Endpoints consumidos
+
 - `POST /auth/login`
 - `GET /posts`
 - `GET /posts/:id`
@@ -122,16 +174,54 @@ export const API_BASE_URL = 'http://localhost:3000';
 - `PUT /students/:id`
 - `DELETE /students/:id`
 
+### Convenções de comunicação
+
+- Todas as chamadas usam o cliente central de API (`apiRequest`).
+- Rotas protegidas recebem token bearer automaticamente.
+- Erros de API são tratados na camada de tela para exibir feedback ao usuário.
+
 ---
 
-## 👩‍🏫 Guia de uso rápido
+## 📲 Guia de uso (passo a passo)
 
-1. Faça login com um usuário válido.
-2. Vá em **Posts** para listar, buscar e abrir detalhes.
-3. Se for docente, use:
-   - **Nova postagem** para criar;
-   - **Admin** para editar/excluir posts;
-   - **Docentes** e **Alunos** para CRUD administrativo.
+### 1) Acesso inicial
+
+1. Abra o app.
+2. Faça login com usuário cadastrado no back-end.
+3. Após autenticação, o app abre a navegação principal.
+
+### 2) Fluxo comum (todos os perfis)
+
+- Entre em **Posts** para visualizar lista.
+- Use a busca para filtrar por palavra-chave.
+- Toque em um item para abrir detalhes do post.
+- No detalhe, envie comentário quando o endpoint estiver habilitado.
+
+### 3) Fluxo docente (`teacher`)
+
+- Criar postagem em **Nova postagem**.
+- Editar/excluir em **Admin**.
+- Gerenciar docentes em **Docentes** (listar, criar, editar, excluir).
+- Gerenciar estudantes em **Alunos** (listar, criar, editar, excluir).
+
+### 4) Fluxo discente (`student`)
+
+- Acesso somente às áreas de leitura de conteúdo.
+- Sem opções de criação, edição ou exclusão administrativa.
+
+---
+
+## 🧪 Troubleshooting rápido
+
+- **Erro de rede no celular físico**
+  - Verifique se API e celular estão na mesma rede.
+  - Troque `localhost` pelo IP da máquina no `API_BASE_URL`.
+- **Tela em branco após login**
+  - Confira formato do payload retornado por `POST /auth/login`.
+  - Verifique se token/role estão sendo persistidos corretamente.
+- **Erro 401 em rotas protegidas**
+  - Valide expiração do token.
+  - Faça logout/login para renovar sessão.
 
 ---
 
