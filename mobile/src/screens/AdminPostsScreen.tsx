@@ -1,30 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TeacherOnly } from '@/components/TeacherOnly';
-import type { Post } from '@/types';
+import { AppDataContext } from '@/context/AppDataContext';
 import { ROUTES } from '@/utils/constants';
 
 export function AdminPostsScreen() {
   const navigation = useNavigation();
-  const [posts, setPosts] = useState<Post[]>([]);
-
-  async function loadPosts() {
-    const data = await apiRequest<Post[]>('/posts');
-    setPosts(data);
-  }
+  const { posts, loadPosts, deletePost } = useContext(AppDataContext);
 
   useEffect(() => {
     loadPosts();
-  }, []);
+  }, [loadPosts]);
 
   async function handleDelete(postId: string) {
     try {
-      await apiRequest(`/posts/${postId}`, { method: 'DELETE' });
+      await deletePost(postId);
       Alert.alert('Postagens', 'Post removido com sucesso.');
-      loadPosts();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao remover post.';
       Alert.alert('Postagens', message);
@@ -34,25 +27,25 @@ export function AdminPostsScreen() {
   return (
     <TeacherOnly>
       <SafeAreaView style={styles.container}>
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.subtitle}>Por {item.author}</Text>
-            <View style={styles.actions}>
-              <PrimaryButton
-                label="Editar"
-                variant="outline"
-                onPress={() => navigation.navigate(ROUTES.postEdit as never, { postId: item.id } as never)}
-              />
-              <PrimaryButton label="Excluir" variant="danger" onPress={() => handleDelete(item.id)} />
+        <FlatList
+          data={posts}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.subtitle}>Por {item.author}</Text>
+              <View style={styles.actions}>
+                <PrimaryButton
+                  label="Editar"
+                  variant="outline"
+                  onPress={() => (navigation as any).navigate(ROUTES.postEdit as never, { postId: item.id } as never)}
+                />
+                <PrimaryButton label="Excluir" variant="danger" onPress={() => handleDelete(item.id)} />
+              </View>
             </View>
-          </View>
-        )}
-        ListEmptyComponent={<Text style={styles.empty}>Nenhuma postagem cadastrada.</Text>}
-      />
+          )}
+          ListEmptyComponent={<Text style={styles.empty}>Nenhuma postagem cadastrada.</Text>}
+        />
       </SafeAreaView>
     </TeacherOnly>
   );

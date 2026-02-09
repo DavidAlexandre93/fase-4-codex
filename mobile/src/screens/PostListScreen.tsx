@@ -1,33 +1,31 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { apiRequest } from '@/api/client';
 import { PostCard } from '@/components/PostCard';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
+import { AppDataContext } from '@/context/AppDataContext';
 import { AuthContext } from '@/context/AuthContext';
-import type { Post } from '@/types';
 import { ROUTES } from '@/utils/constants';
 
 export function PostListScreen() {
   const navigation = useNavigation();
   const { hasRole } = useContext(AuthContext);
-  const [posts, setPosts] = useState<Post[]>([]);
+  const { posts, loadPosts } = useContext(AppDataContext);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function loadPosts() {
+  async function refreshPosts() {
     try {
       setLoading(true);
-      const data = await apiRequest<Post[]>('/posts');
-      setPosts(data);
+      await loadPosts();
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadPosts();
+    refreshPosts();
   }, []);
 
   const filteredPosts = useMemo(() => {
@@ -45,18 +43,18 @@ export function PostListScreen() {
       <View style={styles.header}>
         <Text style={styles.heading}>Posts recentes</Text>
         {hasRole('teacher') && (
-          <PrimaryButton label="Nova postagem" onPress={() => navigation.navigate(ROUTES.postCreate as never)} />
+          <PrimaryButton label="Nova postagem" onPress={() => (navigation as any).navigate(ROUTES.postCreate as never)} />
         )}
       </View>
       <TextField label="Buscar" value={query} onChangeText={setQuery} placeholder="Digite palavras-chave" />
       <FlatList
         data={filteredPosts}
         keyExtractor={(item) => item.id}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={loadPosts} />}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refreshPosts} />}
         renderItem={({ item }) => (
           <PostCard
             post={item}
-            onPress={() => navigation.navigate(ROUTES.postDetail as never, { postId: item.id } as never)}
+            onPress={() => (navigation as any).navigate(ROUTES.postDetail as never, { postId: item.id } as never)}
           />
         )}
         ListEmptyComponent={<Text style={styles.empty}>Nenhum post encontrado.</Text>}
