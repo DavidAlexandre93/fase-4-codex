@@ -43,7 +43,7 @@ export function PostListScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.heading}>Posts recentes</Text>
+        <Text style={styles.heading}>Página principal</Text>
         {hasRole('teacher') && (
           <PrimaryButton label="Nova postagem" onPress={() => navigation.navigate(ROUTES.postCreate as never)} />
         )}
