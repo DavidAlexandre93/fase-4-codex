@@ -11,6 +11,7 @@
       "@/hooks/*": ["src/hooks/*"],
       "@/navigation/*": ["src/navigation/*"],
       "@/screens/*": ["src/screens/*"],
+      "@/types": ["src/types/index"],
       "@/types/*": ["src/types/*"],
       "@/utils/*": ["src/utils/*"]
     }
