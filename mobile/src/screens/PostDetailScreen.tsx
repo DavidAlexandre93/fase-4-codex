@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import type { Post, PostComment } from '@/types';
+import { AppDataContext } from '@/context/AppDataContext';
+import type { Post } from '@/types';
 
 interface PostDetailParams {
   postId: string;
@@ -12,6 +14,7 @@ interface PostDetailParams {
 
 export function PostDetailScreen() {
   const route = useRoute<RouteProp<Record<string, PostDetailParams>, string>>();
+  const { getPost } = useContext(AppDataContext);
   const { postId } = route.params as PostDetailParams;
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<PostComment[]>([]);
@@ -28,10 +31,12 @@ export function PostDetailScreen() {
         const message = error instanceof Error ? error.message : 'Erro ao carregar post.';
         Alert.alert('Post', message);
       }
+      const data = await getPost(postId);
+      setPost(data);
     }
 
     loadPost();
-  }, [postId]);
+  }, [postId, getPost]);
 
   async function handleComment() {
     const trimmedComment = comment.trim();
