@@ -4,6 +4,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
+import { TeacherOnly } from '@/components/TeacherOnly';
 import type { Teacher } from '@/types';
 
 interface TeacherFormParams {
@@ -53,12 +54,14 @@ export function TeacherFormScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <TeacherOnly>
+      <SafeAreaView style={styles.container}>
       <TextField label="Nome" value={name} onChangeText={setName} placeholder="Nome completo" />
       <TextField label="Email" value={email} onChangeText={setEmail} placeholder="email@instituicao.edu" />
       <TextField label="Departamento" value={department} onChangeText={setDepartment} placeholder="Departamento" />
       <PrimaryButton label={teacherId ? 'Salvar alterações' : 'Cadastrar'} onPress={handleSubmit} />
-    </SafeAreaView>
+      </SafeAreaView>
+    </TeacherOnly>
   );
 }
 
