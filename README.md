@@ -45,6 +45,7 @@ A interface foi organizada para atender os requisitos acadêmicos de:
 - **Context API** para estado de autenticação
 - **AsyncStorage** para persistência de sessão
 - Cliente HTTP com `fetch` centralizado (`apiRequest`)
+- **Hooks + componentes funcionais** em toda a camada de interface (estado local, ciclo de vida e contexto com `useState`, `useEffect`, `useMemo`, `useCallback` e hooks customizados).
 
 ---
 

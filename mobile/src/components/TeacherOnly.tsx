@@ -1,13 +1,13 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { AuthContext } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TeacherOnlyProps {
   children: React.ReactNode;
 }
 
 export function TeacherOnly({ children }: TeacherOnlyProps) {
-  const { hasRole } = useContext(AuthContext);
+  const { hasRole } = useAuth();
 
   if (!hasRole('teacher')) {
     return (
