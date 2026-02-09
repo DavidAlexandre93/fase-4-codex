@@ -1,7 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { AuthContext } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { AdminPostsScreen } from '@/screens/AdminPostsScreen';
 import { PostCreateScreen } from '@/screens/PostCreateScreen';
 import { PostDetailScreen } from '@/screens/PostDetailScreen';
@@ -20,7 +20,7 @@ const StudentsStack = createNativeStackNavigator();
 const AdminStack = createNativeStackNavigator();
 
 function PostsStackNavigator() {
-  const { hasRole } = useContext(AuthContext);
+  const { hasRole } = useAuth();
 
   return (
     <PostsStack.Navigator>
@@ -88,7 +88,7 @@ function AdminStackNavigator() {
 }
 
 export function AppTabs() {
-  const { hasRole } = useContext(AuthContext);
+  const { hasRole } = useAuth();
 
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }}>

@@ -1,17 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TeacherOnly } from '@/components/TeacherOnly';
-import type { Teacher } from '@/types';
+import { AppDataContext } from '@/context/AppDataContext';
 import { ROUTES } from '@/utils/constants';
-
-interface PaginatedResponse<T> {
-  data: T[];
-  page: number;
-  totalPages: number;
-}
 
 export function TeachersListScreen() {
   const navigation = useNavigation();
@@ -35,10 +28,11 @@ export function TeachersListScreen() {
       setIsLoading(false);
     }
   }
+  const { teachers, loadTeachers, deleteTeacher, teachersPage, teachersTotalPages } = useContext(AppDataContext);
 
   useEffect(() => {
     loadTeachers(1);
-  }, []);
+  }, [loadTeachers]);
 
   async function confirmDelete(teacherId: string) {
     Alert.alert('Excluir docente', 'Tem certeza que deseja excluir este docente?', [
@@ -53,7 +47,7 @@ export function TeachersListScreen() {
 
   async function handleDelete(teacherId: string) {
     try {
-      await apiRequest(`/teachers/${teacherId}`, { method: 'DELETE' });
+      await deleteTeacher(teacherId);
       Alert.alert('Docentes', 'Docente removido com sucesso.');
       const targetPage = teachers.length === 1 && page > 1 ? page - 1 : page;
       loadTeachers(targetPage);
@@ -102,6 +96,26 @@ export function TeachersListScreen() {
           ListEmptyComponent={!isLoading ? <Text style={styles.empty}>Nenhum docente encontrado.</Text> : null}
         />
 
+        <PrimaryButton label="Cadastrar docente" onPress={() => (navigation as any).navigate(ROUTES.teacherForm as never)} />
+        <FlatList
+          data={teachers}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Text style={styles.title}>{item.name}</Text>
+              <Text style={styles.subtitle}>{item.email}</Text>
+              <View style={styles.actions}>
+                <PrimaryButton
+                  label="Editar"
+                  variant="outline"
+                  onPress={() => (navigation as any).navigate(ROUTES.teacherForm as never, { teacherId: item.id } as never)}
+                />
+                <PrimaryButton label="Excluir" variant="danger" onPress={() => handleDelete(item.id)} />
+              </View>
+            </View>
+          )}
+          ListEmptyComponent={<Text style={styles.empty}>Nenhum docente encontrado.</Text>}
+        />
         <View style={styles.pagination}>
           <PrimaryButton
             label="Anterior"
@@ -111,12 +125,19 @@ export function TeachersListScreen() {
           />
           <Text style={styles.pageLabel}>
             Página {page} de {totalPages}
+            onPress={() => loadTeachers(Math.max(1, teachersPage - 1))}
+            disabled={teachersPage <= 1}
+          />
+          <Text style={styles.pageLabel}>
+            Página {teachersPage} de {teachersTotalPages}
           </Text>
           <PrimaryButton
             label="Próxima"
             variant="outline"
             onPress={() => loadTeachers(Math.min(totalPages, page + 1))}
             disabled={page >= totalPages || isLoading}
+            onPress={() => loadTeachers(Math.min(teachersTotalPages, teachersPage + 1))}
+            disabled={teachersPage >= teachersTotalPages}
           />
         </View>
       </SafeAreaView>
