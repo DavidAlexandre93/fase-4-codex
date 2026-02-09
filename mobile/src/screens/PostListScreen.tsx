@@ -1,17 +1,17 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { PostCard } from '@/components/PostCard';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
-import { AppDataContext } from '@/context/AppDataContext';
-import { AuthContext } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
+import type { Post } from '@/types';
 import { ROUTES } from '@/utils/constants';
 
 export function PostListScreen() {
   const navigation = useNavigation();
-  const { hasRole } = useContext(AuthContext);
-  const { posts, loadPosts } = useContext(AppDataContext);
+  const { hasRole } = useAuth();
+  const [posts, setPosts] = useState<Post[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
 
