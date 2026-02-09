@@ -13,7 +13,12 @@ export function PostCard({ post, onPress }: PostCardProps) {
     briefDescription.length > 140 ? `${briefDescription.slice(0, 137).trimEnd()}...` : briefDescription;
 
   return (
-    <Pressable onPress={onPress} style={styles.card}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Abrir postagem ${post.title}`}
+      onPress={onPress}
+      style={styles.card}
+    >
       <Text style={styles.title}>{post.title}</Text>
       <Text style={styles.meta}>Por {post.author}</Text>
       <Text numberOfLines={3} style={styles.description}>

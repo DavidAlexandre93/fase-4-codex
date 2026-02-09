@@ -1,3 +1,5 @@
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { Alert, FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -10,6 +12,8 @@ import { ROUTES } from '@/utils/constants';
 
 export function PostListScreen() {
   const navigation = useNavigation();
+  const { hasRole, logout, user } = useContext(AuthContext);
+  const { posts, loadPosts } = useContext(AppDataContext);
   const { hasRole } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [query, setQuery] = useState('');
@@ -21,6 +25,14 @@ export function PostListScreen() {
       await loadPosts();
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await logout();
+    } catch {
+      Alert.alert('Sessão', 'Não foi possível encerrar a sessão agora.');
     }
   }
 
@@ -41,12 +53,20 @@ export function PostListScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
+        <Text style={styles.heading}>Posts recentes</Text>
+        <Text style={styles.subtitle}>Olá, {user?.name ?? 'usuário'}.</Text>
+        <View style={styles.headerActions}>
+          {hasRole('teacher') && (
+            <PrimaryButton label="Nova postagem" onPress={() => (navigation as any).navigate(ROUTES.postCreate as never)} />
+          )}
+          <PrimaryButton label="Sair" variant="outline" onPress={handleLogout} />
+        </View>
         <Text style={styles.heading}>Página principal</Text>
         {hasRole('teacher') && (
           <PrimaryButton label="Nova postagem" onPress={() => (navigation as any).navigate(ROUTES.postCreate as never)} />
         )}
       </View>
-      <TextField label="Buscar" value={query} onChangeText={setQuery} placeholder="Digite palavras-chave" />
+      <TextField label="Buscar" value={query} onChangeText={setQuery} placeholder="Digite palavras-chave" autoCapitalize="none" />
       <FlatList
         data={filteredPosts}
         keyExtractor={(item) => item.id}
@@ -57,7 +77,7 @@ export function PostListScreen() {
             onPress={() => (navigation as any).navigate(ROUTES.postDetail as never, { postId: item.id } as never)}
           />
         )}
-        ListEmptyComponent={<Text style={styles.empty}>Nenhum post encontrado.</Text>}
+        ListEmptyComponent={<Text style={styles.empty}>Nenhum post encontrado para a busca informada.</Text>}
         contentContainerStyle={styles.list}
       />
     </SafeAreaView>
@@ -76,8 +96,18 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#0F172A'
+  },
+  subtitle: {
+    color: '#475569',
+    marginTop: 4,
     marginBottom: 8
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+    flexWrap: 'wrap'
   },
   list: {
     paddingBottom: 24
