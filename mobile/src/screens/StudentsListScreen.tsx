@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TeacherOnly } from '@/components/TeacherOnly';
@@ -26,19 +26,30 @@ export function StudentsListScreen() {
     setTotalPages(response.totalPages);
   }
 
-  useEffect(() => {
-    loadStudents(1);
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadStudents(1);
+    }, [])
+  );
 
   async function handleDelete(studentId: string) {
-    try {
-      await apiRequest(`/students/${studentId}`, { method: 'DELETE' });
-      Alert.alert('Alunos', 'Aluno removido com sucesso.');
-      loadStudents(page);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Erro ao remover aluno.';
-      Alert.alert('Alunos', message);
-    }
+    Alert.alert('Alunos', 'Deseja realmente excluir este aluno?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await apiRequest(`/students/${studentId}`, { method: 'DELETE' });
+            Alert.alert('Alunos', 'Aluno removido com sucesso.');
+            loadStudents(page);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Erro ao remover aluno.';
+            Alert.alert('Alunos', message);
+          }
+        }
+      }
+    ]);
   }
 
   return (
