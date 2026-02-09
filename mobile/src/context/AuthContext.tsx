@@ -51,24 +51,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const response = await apiRequest<AuthResponse>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password })
-    });
-
-    const authUser: AuthUser = {
-      id: response.user.id,
-      name: response.user.name,
-      role: response.user.role,
-      token: response.token
-    };
     const authUser = await loginRequest(email, password);
 
     await AsyncStorage.setItem('token', authUser.token);
-    await AsyncStorage.setItem(
-      'user',
-      JSON.stringify({ id: authUser.id, name: authUser.name, role: authUser.role })
-    );
+    await AsyncStorage.setItem('user', JSON.stringify({ id: authUser.id, name: authUser.name, role: authUser.role }));
     setUser(authUser);
   }, []);
 

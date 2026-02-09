@@ -1,10 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { apiRequest } from '@/api/client';
-import React, { useContext, useEffect } from 'react';
-import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TeacherOnly } from '@/components/TeacherOnly';
 import { AppDataContext } from '@/context/AppDataContext';
@@ -17,35 +13,15 @@ export function StudentsListScreen() {
   useFocusEffect(
     useCallback(() => {
       loadStudents(1);
-    }, [])
+    }, [loadStudents])
   );
-
-  async function handleDelete(studentId: string) {
-    Alert.alert('Alunos', 'Deseja realmente excluir este aluno?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Excluir',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await apiRequest(`/students/${studentId}`, { method: 'DELETE' });
-            Alert.alert('Alunos', 'Aluno removido com sucesso.');
-            loadStudents(page);
-          } catch (error) {
-            const message = error instanceof Error ? error.message : 'Erro ao remover aluno.';
-            Alert.alert('Alunos', message);
-          }
-        }
-      }
-    ]);
-  useEffect(() => {
-    loadStudents(1);
-  }, [loadStudents]);
 
   async function handleDelete(studentId: string) {
     try {
       await deleteStudent(studentId);
       Alert.alert('Alunos', 'Aluno removido com sucesso.');
+      const targetPage = students.length === 1 && studentsPage > 1 ? studentsPage - 1 : studentsPage;
+      await loadStudents(targetPage);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao remover aluno.';
       Alert.alert('Alunos', message);

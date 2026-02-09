@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
@@ -52,21 +50,12 @@ export function TeacherFormScreen() {
   return (
     <TeacherOnly>
       <SafeAreaView style={styles.container}>
-      {!teacherId && (
-        <View style={styles.header}>
-          <Text style={styles.title}>Criação de professores</Text>
-          <Text style={styles.description}>
-            Formulário para que professores possam cadastrar outros professores.
-          </Text>
-        </View>
-      )}
-      <TextField label="Nome" value={name} onChangeText={setName} placeholder="Nome completo" />
-      <TextField label="Email" value={email} onChangeText={setEmail} placeholder="email@instituicao.edu" />
-      <TextField label="Departamento" value={department} onChangeText={setDepartment} placeholder="Departamento" />
-      <PrimaryButton
-        label={teacherId ? 'Salvar alterações' : 'Enviar cadastro ao servidor'}
-        onPress={handleSubmit}
-      />
+        {!teacherId && (
+          <View style={styles.header}>
+            <Text style={styles.title}>Criação de professores</Text>
+            <Text style={styles.description}>Formulário para que professores possam cadastrar outros professores.</Text>
+          </View>
+        )}
         <TextField label="Nome" value={name} onChangeText={setName} placeholder="Nome completo" />
         <TextField label="Email" value={email} onChangeText={setEmail} placeholder="email@instituicao.edu" />
         <TextField label="Departamento" value={department} onChangeText={setDepartment} placeholder="Departamento" />

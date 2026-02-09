@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet, Text } from 'react-native';
 import React, { useContext, useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
@@ -17,25 +15,14 @@ export function PostCreateScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit() {
-    const payload = {
-      title: title.trim(),
-      content: content.trim(),
-      author: author.trim()
-    };
-
-    if (!payload.title || !payload.content || !payload.author) {
+    if (!title.trim() || !content.trim() || !author.trim()) {
       Alert.alert('Postagem', 'Preencha título, conteúdo e autor para continuar.');
       return;
     }
 
     try {
       setIsSubmitting(true);
-      await apiRequest('/posts', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
-      Alert.alert('Postagem', 'Post enviado com sucesso para o servidor.');
-      await createPost({ title, content, author });
+      await createPost({ title: title.trim(), content: content.trim(), author: author.trim() });
       Alert.alert('Postagem', 'Post criado com sucesso.');
       navigation.goBack();
     } catch (error) {
@@ -54,11 +41,7 @@ export function PostCreateScreen() {
         <TextField label="Título" value={title} onChangeText={setTitle} placeholder="Digite o título" />
         <TextField label="Autor" value={author} onChangeText={setAuthor} placeholder="Nome do autor" />
         <TextField label="Conteúdo" value={content} onChangeText={setContent} placeholder="Escreva o conteúdo" multiline />
-        <PrimaryButton label={isSubmitting ? 'Enviando...' : 'Enviar postagem'} onPress={handleSubmit} />
-        <TextField label="Título" value={title} onChangeText={setTitle} placeholder="Digite o título" />
-        <TextField label="Autor" value={author} onChangeText={setAuthor} placeholder="Nome do autor" />
-        <TextField label="Conteúdo" value={content} onChangeText={setContent} placeholder="Conteúdo" multiline />
-        <PrimaryButton label="Publicar" onPress={handleSubmit} />
+        <PrimaryButton label={isSubmitting ? 'Enviando...' : 'Enviar postagem'} onPress={handleSubmit} disabled={isSubmitting} />
       </SafeAreaView>
     </TeacherOnly>
   );

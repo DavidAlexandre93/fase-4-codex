@@ -4,9 +4,8 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
-import type { Post, PostComment } from '@/types';
 import { AppDataContext } from '@/context/AppDataContext';
-import type { Post } from '@/types';
+import type { Post, PostComment } from '@/types';
 
 interface PostDetailParams {
   postId: string;
@@ -24,19 +23,17 @@ export function PostDetailScreen() {
   useEffect(() => {
     async function loadPost() {
       try {
-        const data = await apiRequest<Post>(`/posts/${postId}`);
+        const data = await getPost(postId);
         setPost(data);
         setComments(data.comments ?? []);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Erro ao carregar post.';
         Alert.alert('Post', message);
       }
-      const data = await getPost(postId);
-      setPost(data);
     }
 
     loadPost();
-  }, [postId, getPost]);
+  }, [getPost, postId]);
 
   async function handleComment() {
     const trimmedComment = comment.trim();
@@ -97,6 +94,7 @@ export function PostDetailScreen() {
           <PrimaryButton
             label={isSubmittingComment ? 'Enviando...' : 'Enviar comentário'}
             onPress={handleComment}
+            disabled={isSubmittingComment}
           />
         </View>
       </ScrollView>

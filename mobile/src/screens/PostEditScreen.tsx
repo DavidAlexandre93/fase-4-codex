@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet, Text } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, Text } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
@@ -27,7 +25,7 @@ export function PostEditScreen() {
     async function loadPost() {
       try {
         setIsLoading(true);
-        const data = await apiRequest<Post>(`/posts/${postId}`);
+        const data = await getPost(postId);
         setTitle(data.title);
         setContent(data.content);
         setAuthor(data.author);
@@ -37,14 +35,10 @@ export function PostEditScreen() {
       } finally {
         setIsLoading(false);
       }
-      const data = await getPost(postId);
-      setTitle(data.title);
-      setContent(data.content);
-      setAuthor(data.author);
     }
 
     loadPost();
-  }, [postId, getPost]);
+  }, [getPost, navigation, postId]);
 
   async function handleSubmit() {
     if (!title.trim() || !content.trim() || !author.trim()) {
@@ -54,15 +48,7 @@ export function PostEditScreen() {
 
     try {
       setIsSaving(true);
-      await apiRequest(`/posts/${postId}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          title: title.trim(),
-          content: content.trim(),
-          author: author.trim()
-        })
-      });
-      await updatePost(postId, { title, content, author });
+      await updatePost(postId, { title: title.trim(), content: content.trim(), author: author.trim() });
       Alert.alert('Postagem', 'Post atualizado com sucesso.');
       navigation.goBack();
     } catch (error) {
@@ -76,24 +62,20 @@ export function PostEditScreen() {
   return (
     <TeacherOnly>
       <SafeAreaView style={styles.container}>
-      {isLoading ? (
-        <Text style={styles.loading}>Carregando dados atuais da postagem...</Text>
-      ) : (
-        <>
-          <TextField label="Título" value={title} onChangeText={setTitle} placeholder="Digite o título" />
-          <TextField label="Autor" value={author} onChangeText={setAuthor} placeholder="Nome do autor" />
-          <TextField label="Conteúdo" value={content} onChangeText={setContent} placeholder="Conteúdo" multiline />
-          <PrimaryButton
-            label={isSaving ? 'Salvando...' : 'Salvar alterações'}
-            onPress={handleSubmit}
-            disabled={isSaving}
-          />
-        </>
-      )}
-        <TextField label="Título" value={title} onChangeText={setTitle} placeholder="Digite o título" />
-        <TextField label="Autor" value={author} onChangeText={setAuthor} placeholder="Nome do autor" />
-        <TextField label="Conteúdo" value={content} onChangeText={setContent} placeholder="Conteúdo" multiline />
-        <PrimaryButton label="Salvar alterações" onPress={handleSubmit} />
+        {isLoading ? (
+          <Text style={styles.loading}>Carregando dados atuais da postagem...</Text>
+        ) : (
+          <>
+            <TextField label="Título" value={title} onChangeText={setTitle} placeholder="Digite o título" />
+            <TextField label="Autor" value={author} onChangeText={setAuthor} placeholder="Nome do autor" />
+            <TextField label="Conteúdo" value={content} onChangeText={setContent} placeholder="Conteúdo" multiline />
+            <PrimaryButton
+              label={isSaving ? 'Salvando...' : 'Salvar alterações'}
+              onPress={handleSubmit}
+              disabled={isSaving}
+            />
+          </>
+        )}
       </SafeAreaView>
     </TeacherOnly>
   );
