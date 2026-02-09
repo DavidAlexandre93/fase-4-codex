@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import { TeacherOnly } from '@/components/TeacherOnly';
-import type { Teacher } from '@/types';
+import { AppDataContext } from '@/context/AppDataContext';
 
 interface TeacherFormParams {
   teacherId?: string;
@@ -14,6 +15,7 @@ interface TeacherFormParams {
 export function TeacherFormScreen() {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<Record<string, TeacherFormParams>, string>>();
+  const { getTeacher, createTeacher, updateTeacher } = useContext(AppDataContext);
   const { teacherId } = (route.params ?? {}) as TeacherFormParams;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -22,28 +24,22 @@ export function TeacherFormScreen() {
   useEffect(() => {
     async function loadTeacher() {
       if (!teacherId) return;
-      const data = await apiRequest<Teacher>(`/teachers/${teacherId}`);
+      const data = await getTeacher(teacherId);
       setName(data.name);
       setEmail(data.email);
       setDepartment(data.department ?? '');
     }
 
     loadTeacher();
-  }, [teacherId]);
+  }, [teacherId, getTeacher]);
 
   async function handleSubmit() {
     try {
       if (teacherId) {
-        await apiRequest(`/teachers/${teacherId}`, {
-          method: 'PUT',
-          body: JSON.stringify({ name, email, department })
-        });
+        await updateTeacher(teacherId, { name, email, department });
         Alert.alert('Docentes', 'Docente atualizado com sucesso.');
       } else {
-        await apiRequest('/teachers', {
-          method: 'POST',
-          body: JSON.stringify({ name, email, department })
-        });
+        await createTeacher({ name, email, department });
         Alert.alert('Docentes', 'Docente cadastrado com sucesso.');
       }
       navigation.goBack();
@@ -56,10 +52,25 @@ export function TeacherFormScreen() {
   return (
     <TeacherOnly>
       <SafeAreaView style={styles.container}>
+      {!teacherId && (
+        <View style={styles.header}>
+          <Text style={styles.title}>Criação de professores</Text>
+          <Text style={styles.description}>
+            Formulário para que professores possam cadastrar outros professores.
+          </Text>
+        </View>
+      )}
       <TextField label="Nome" value={name} onChangeText={setName} placeholder="Nome completo" />
       <TextField label="Email" value={email} onChangeText={setEmail} placeholder="email@instituicao.edu" />
       <TextField label="Departamento" value={department} onChangeText={setDepartment} placeholder="Departamento" />
-      <PrimaryButton label={teacherId ? 'Salvar alterações' : 'Cadastrar'} onPress={handleSubmit} />
+      <PrimaryButton
+        label={teacherId ? 'Salvar alterações' : 'Enviar cadastro ao servidor'}
+        onPress={handleSubmit}
+      />
+        <TextField label="Nome" value={name} onChangeText={setName} placeholder="Nome completo" />
+        <TextField label="Email" value={email} onChangeText={setEmail} placeholder="email@instituicao.edu" />
+        <TextField label="Departamento" value={department} onChangeText={setDepartment} placeholder="Departamento" />
+        <PrimaryButton label={teacherId ? 'Salvar alterações' : 'Cadastrar'} onPress={handleSubmit} />
       </SafeAreaView>
     </TeacherOnly>
   );
@@ -70,5 +81,18 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#F1F5F9'
+  },
+  header: {
+    marginBottom: 16,
+    gap: 6
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0F172A'
+  },
+  description: {
+    color: '#475569',
+    lineHeight: 20
   }
 });
