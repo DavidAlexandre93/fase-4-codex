@@ -1,13 +1,15 @@
 import React, { useContext, useEffect } from 'react';
 import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TeacherOnly } from '@/components/TeacherOnly';
 import { AppDataContext } from '@/context/AppDataContext';
+import type { TeachersStackParamList } from '@/navigation/AppTabs';
 import { ROUTES } from '@/utils/constants';
 
 export function TeachersListScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<TeachersStackParamList>>();
   const { teachers, loadTeachers, deleteTeacher, teachersPage, teachersTotalPages } = useContext(AppDataContext);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ export function TeachersListScreen() {
   return (
     <TeacherOnly>
       <SafeAreaView style={styles.container}>
-        <PrimaryButton label="Cadastrar docente" onPress={() => (navigation as any).navigate(ROUTES.teacherForm as never)} />
+        <PrimaryButton label="Cadastrar docente" onPress={() => navigation.navigate(ROUTES.teacherForm)} />
         <FlatList
           data={teachers}
           keyExtractor={(item) => item.id}
@@ -41,7 +43,7 @@ export function TeachersListScreen() {
                 <PrimaryButton
                   label="Editar"
                   variant="outline"
-                  onPress={() => (navigation as any).navigate(ROUTES.teacherForm as never, { teacherId: item.id } as never)}
+                  onPress={() => navigation.navigate(ROUTES.teacherForm, { teacherId: item.id })}
                 />
                 <PrimaryButton label="Excluir" variant="danger" onPress={() => handleDelete(item.id)} />
               </View>

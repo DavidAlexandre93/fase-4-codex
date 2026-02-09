@@ -1,13 +1,15 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TeacherOnly } from '@/components/TeacherOnly';
 import { AppDataContext } from '@/context/AppDataContext';
+import type { AdminStackParamList } from '@/navigation/AppTabs';
 import { ROUTES } from '@/utils/constants';
 
 export function AdminPostsScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
   const { posts, loadPosts, deletePost } = useContext(AppDataContext);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -64,7 +66,7 @@ export function AdminPostsScreen() {
                   <PrimaryButton
                     label="Editar"
                     variant="outline"
-                    onPress={() => (navigation as any).navigate(ROUTES.postEdit as never, { postId: item.id } as never)}
+                    onPress={() => navigation.navigate(ROUTES.postEdit, { postId: item.id })}
                   />
                   <PrimaryButton label="Excluir" variant="danger" onPress={() => confirmDelete(item.id, item.title)} />
                 </View>

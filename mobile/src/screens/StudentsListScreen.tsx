@@ -1,13 +1,15 @@
 import React, { useCallback, useContext } from 'react';
 import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TeacherOnly } from '@/components/TeacherOnly';
 import { AppDataContext } from '@/context/AppDataContext';
+import type { StudentsStackParamList } from '@/navigation/AppTabs';
 import { ROUTES } from '@/utils/constants';
 
 export function StudentsListScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<StudentsStackParamList>>();
   const { students, loadStudents, deleteStudent, studentsPage, studentsTotalPages } = useContext(AppDataContext);
 
   useFocusEffect(
@@ -31,7 +33,7 @@ export function StudentsListScreen() {
   return (
     <TeacherOnly>
       <SafeAreaView style={styles.container}>
-        <PrimaryButton label="Cadastrar aluno" onPress={() => (navigation as any).navigate(ROUTES.studentForm as never)} />
+        <PrimaryButton label="Cadastrar aluno" onPress={() => navigation.navigate(ROUTES.studentForm)} />
         <FlatList
           data={students}
           keyExtractor={(item) => item.id}
@@ -43,7 +45,7 @@ export function StudentsListScreen() {
                 <PrimaryButton
                   label="Editar"
                   variant="outline"
-                  onPress={() => (navigation as any).navigate(ROUTES.studentForm as never, { studentId: item.id } as never)}
+                  onPress={() => navigation.navigate(ROUTES.studentForm, { studentId: item.id })}
                 />
                 <PrimaryButton label="Excluir" variant="danger" onPress={() => handleDelete(item.id)} />
               </View>

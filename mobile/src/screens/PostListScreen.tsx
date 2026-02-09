@@ -1,28 +1,30 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Alert, FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PostCard } from '@/components/PostCard';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import { AppDataContext } from '@/context/AppDataContext';
 import { useAuth } from '@/hooks/useAuth';
+import { PostsStackParamList } from '@/navigation/AppTabs';
 import { ROUTES } from '@/utils/constants';
 
 export function PostListScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<PostsStackParamList>>();
   const { hasRole, logout, user } = useAuth();
   const { posts, loadPosts } = useContext(AppDataContext);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function refreshPosts() {
+  const refreshPosts = useCallback(async () => {
     try {
       setLoading(true);
       await loadPosts();
     } finally {
       setLoading(false);
     }
-  }
+  }, [loadPosts]);
 
   async function handleLogout() {
     try {
@@ -34,7 +36,7 @@ export function PostListScreen() {
 
   useEffect(() => {
     refreshPosts();
-  }, []);
+  }, [refreshPosts]);
 
   const filteredPosts = useMemo(() => {
     if (!query.trim()) return posts;
@@ -54,7 +56,7 @@ export function PostListScreen() {
         <Text style={styles.subtitle}>Olá, {user?.name ?? 'usuário'}.</Text>
         <View style={styles.headerActions}>
           {hasRole('teacher') && (
-            <PrimaryButton label="Nova postagem" onPress={() => (navigation as any).navigate(ROUTES.postCreate as never)} />
+            <PrimaryButton label="Nova postagem" onPress={() => navigation.navigate(ROUTES.postCreate)} />
           )}
           <PrimaryButton label="Sair" variant="outline" onPress={handleLogout} />
         </View>
@@ -67,7 +69,7 @@ export function PostListScreen() {
         renderItem={({ item }) => (
           <PostCard
             post={item}
-            onPress={() => (navigation as any).navigate(ROUTES.postDetail as never, { postId: item.id } as never)}
+            onPress={() => navigation.navigate(ROUTES.postDetail, { postId: item.id })}
           />
         )}
         ListEmptyComponent={<Text style={styles.empty}>Nenhum post encontrado para a busca informada.</Text>}

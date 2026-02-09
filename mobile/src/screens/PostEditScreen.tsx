@@ -1,20 +1,19 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet, Text } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import { TeacherOnly } from '@/components/TeacherOnly';
 import { AppDataContext } from '@/context/AppDataContext';
-
-interface PostEditParams {
-  postId: string;
-}
+import type { AdminStackParamList, PostsStackParamList } from '@/navigation/AppTabs';
+import { ROUTES } from '@/utils/constants';
 
 export function PostEditScreen() {
-  const navigation = useNavigation();
-  const route = useRoute<RouteProp<Record<string, PostEditParams>, string>>();
+  const navigation = useNavigation<NativeStackNavigationProp<PostsStackParamList | AdminStackParamList>>();
+  const route = useRoute<RouteProp<PostsStackParamList, typeof ROUTES.postEdit>>();
   const { getPost, updatePost } = useContext(AppDataContext);
-  const { postId } = route.params as PostEditParams;
+  const { postId } = route.params;
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [author, setAuthor] = useState('');
