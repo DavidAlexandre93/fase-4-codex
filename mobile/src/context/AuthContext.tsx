@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
-import { apiRequest } from '@/api/client';
+import { getAuthenticatedUser, loginRequest } from '@/api/auth';
 import type { AuthUser, Role } from '@/types';
 
 interface AuthContextValue {
@@ -19,15 +19,6 @@ export const AuthContext = createContext<AuthContextValue>({
   hasRole: () => false
 });
 
-interface AuthResponse {
-  token: string;
-  user: {
-    id: string;
-    name: string;
-    role: Role;
-  };
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +30,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (storedToken && storedUser) {
         const parsedUser = JSON.parse(storedUser) as Omit<AuthUser, 'token'>;
-        setUser({ ...parsedUser, token: storedToken });
+
+        try {
+          const refreshedUser = await getAuthenticatedUser();
+          setUser({ ...refreshedUser, token: storedToken });
+          await AsyncStorage.setItem(
+            'user',
+            JSON.stringify({ id: refreshedUser.id, name: refreshedUser.name, role: refreshedUser.role })
+          );
+        } catch {
+          setUser({ ...parsedUser, token: storedToken });
+        }
       }
       setIsLoading(false);
     }
@@ -48,20 +49,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const response = await apiRequest<AuthResponse>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password })
-    });
+    const authUser = await loginRequest(email, password);
 
-    const authUser: AuthUser = {
-      id: response.user.id,
-      name: response.user.name,
-      role: response.user.role,
-      token: response.token
-    };
-
-    await AsyncStorage.setItem('token', response.token);
-    await AsyncStorage.setItem('user', JSON.stringify(response.user));
+    await AsyncStorage.setItem('token', authUser.token);
+    await AsyncStorage.setItem(
+      'user',
+      JSON.stringify({ id: authUser.id, name: authUser.name, role: authUser.role })
+    );
     setUser(authUser);
   }, []);
 

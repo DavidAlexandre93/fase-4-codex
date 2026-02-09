@@ -26,7 +26,7 @@ export function LoginScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.card}>
         <Text style={styles.title}>Portal do Blog</Text>
-        <Text style={styles.subtitle}>Acesse com suas credenciais de docente.</Text>
+        <Text style={styles.subtitle}>Acesse com suas credenciais de docente ou aluno.</Text>
         <TextField label="Email" value={email} onChangeText={setEmail} placeholder="email@instituicao.edu" />
         <TextField
           label="Senha"

@@ -3,18 +3,20 @@ import { API_BASE_URL } from '@/utils/constants';
 
 async function getAuthHeaders() {
   const token = await AsyncStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return token ? { Authorization: `Bearer ${token}` } : undefined;
 }
 
 export async function apiRequest<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(await getAuthHeaders()),
-    ...options.headers
-  };
+  const headers = new Headers(options.headers);
+  headers.set('Content-Type', 'application/json');
+
+  const authHeaders = await getAuthHeaders();
+  if (authHeaders?.Authorization) {
+    headers.set('Authorization', authHeaders.Authorization);
+  }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
