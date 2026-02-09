@@ -3,6 +3,7 @@ import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-nat
 import { useNavigation } from '@react-navigation/native';
 import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { TeacherOnly } from '@/components/TeacherOnly';
 import type { Post } from '@/types';
 import { ROUTES } from '@/utils/constants';
 
@@ -31,7 +32,8 @@ export function AdminPostsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <TeacherOnly>
+      <SafeAreaView style={styles.container}>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
@@ -51,7 +53,8 @@ export function AdminPostsScreen() {
         )}
         ListEmptyComponent={<Text style={styles.empty}>Nenhuma postagem cadastrada.</Text>}
       />
-    </SafeAreaView>
+      </SafeAreaView>
+    </TeacherOnly>
   );
 }
 

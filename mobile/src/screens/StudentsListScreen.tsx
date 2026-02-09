@@ -3,6 +3,7 @@ import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-nat
 import { useNavigation } from '@react-navigation/native';
 import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { TeacherOnly } from '@/components/TeacherOnly';
 import type { Student } from '@/types';
 import { ROUTES } from '@/utils/constants';
 
@@ -41,7 +42,8 @@ export function StudentsListScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <TeacherOnly>
+      <SafeAreaView style={styles.container}>
       <PrimaryButton label="Cadastrar aluno" onPress={() => navigation.navigate(ROUTES.studentForm as never)} />
       <FlatList
         data={students}
@@ -79,7 +81,8 @@ export function StudentsListScreen() {
           disabled={page >= totalPages}
         />
       </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </TeacherOnly>
   );
 }
 

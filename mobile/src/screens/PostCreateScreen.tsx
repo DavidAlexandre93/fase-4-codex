@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
+import { TeacherOnly } from '@/components/TeacherOnly';
 
 export function PostCreateScreen() {
   const navigation = useNavigation();
@@ -26,12 +27,14 @@ export function PostCreateScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <TeacherOnly>
+      <SafeAreaView style={styles.container}>
       <TextField label="Título" value={title} onChangeText={setTitle} placeholder="Digite o título" />
       <TextField label="Autor" value={author} onChangeText={setAuthor} placeholder="Nome do autor" />
       <TextField label="Conteúdo" value={content} onChangeText={setContent} placeholder="Conteúdo" multiline />
       <PrimaryButton label="Publicar" onPress={handleSubmit} />
-    </SafeAreaView>
+      </SafeAreaView>
+    </TeacherOnly>
   );
 }
 
