@@ -10,11 +10,14 @@ import {
   View
 } from 'react-native';
 import { AuthContext } from '@/context/AuthContext';
+import React, { useState } from 'react';
+import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { useAuth } from '@/hooks/useAuth';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 
 export function LoginScreen() {
-  const { login } = useContext(AuthContext);
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);

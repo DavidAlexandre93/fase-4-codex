@@ -8,6 +8,10 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, onPress }: PostCardProps) {
+  const briefDescription = (post.description || post.content || '').trim();
+  const preview =
+    briefDescription.length > 140 ? `${briefDescription.slice(0, 137).trimEnd()}...` : briefDescription;
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -18,7 +22,7 @@ export function PostCard({ post, onPress }: PostCardProps) {
       <Text style={styles.title}>{post.title}</Text>
       <Text style={styles.meta}>Por {post.author}</Text>
       <Text numberOfLines={3} style={styles.description}>
-        {post.description || post.content}
+        {preview}
       </Text>
     </Pressable>
   );
