@@ -29,3 +29,9 @@ export interface AuthUser {
   role: Role;
   token: string;
 }
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  page: number;
+  totalPages: number;
+}

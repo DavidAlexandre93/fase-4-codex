@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
+import { AppDataContext } from '@/context/AppDataContext';
 import type { Post } from '@/types';
 
 interface PostDetailParams {
@@ -12,18 +13,19 @@ interface PostDetailParams {
 
 export function PostDetailScreen() {
   const route = useRoute<RouteProp<Record<string, PostDetailParams>, string>>();
+  const { getPost } = useContext(AppDataContext);
   const { postId } = route.params as PostDetailParams;
   const [post, setPost] = useState<Post | null>(null);
   const [comment, setComment] = useState('');
 
   useEffect(() => {
     async function loadPost() {
-      const data = await apiRequest<Post>(`/posts/${postId}`);
+      const data = await getPost(postId);
       setPost(data);
     }
 
     loadPost();
-  }, [postId]);
+  }, [postId, getPost]);
 
   async function handleComment() {
     if (!comment.trim()) return;
