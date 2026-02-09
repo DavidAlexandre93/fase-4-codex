@@ -1,20 +1,19 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import { TeacherOnly } from '@/components/TeacherOnly';
 import { AppDataContext } from '@/context/AppDataContext';
-
-interface TeacherFormParams {
-  teacherId?: string;
-}
+import type { TeachersStackParamList } from '@/navigation/AppTabs';
+import { ROUTES } from '@/utils/constants';
 
 export function TeacherFormScreen() {
-  const navigation = useNavigation();
-  const route = useRoute<RouteProp<Record<string, TeacherFormParams>, string>>();
+  const navigation = useNavigation<NativeStackNavigationProp<TeachersStackParamList>>();
+  const route = useRoute<RouteProp<TeachersStackParamList, typeof ROUTES.teacherForm>>();
   const { getTeacher, createTeacher, updateTeacher } = useContext(AppDataContext);
-  const { teacherId } = (route.params ?? {}) as TeacherFormParams;
+  const { teacherId } = route.params ?? {};
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [department, setDepartment] = useState('');

@@ -5,16 +5,14 @@ import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import { AppDataContext } from '@/context/AppDataContext';
+import type { PostsStackParamList } from '@/navigation/AppTabs';
+import { ROUTES } from '@/utils/constants';
 import type { Post, PostComment } from '@/types';
 
-interface PostDetailParams {
-  postId: string;
-}
-
 export function PostDetailScreen() {
-  const route = useRoute<RouteProp<Record<string, PostDetailParams>, string>>();
+  const route = useRoute<RouteProp<PostsStackParamList, typeof ROUTES.postDetail>>();
   const { getPost } = useContext(AppDataContext);
-  const { postId } = route.params as PostDetailParams;
+  const { postId } = route.params;
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<PostComment[]>([]);
   const [comment, setComment] = useState('');
