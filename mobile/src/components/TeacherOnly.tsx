@@ -7,7 +7,16 @@ interface TeacherOnlyProps {
 }
 
 export function TeacherOnly({ children }: TeacherOnlyProps) {
-  const { hasRole } = useContext(AuthContext);
+  const { user, hasRole } = useContext(AuthContext);
+
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Login necessário</Text>
+        <Text style={styles.subtitle}>Faça login para acessar páginas de criação, edição e administração.</Text>
+      </View>
+    );
+  }
 
   if (!hasRole('teacher')) {
     return (
