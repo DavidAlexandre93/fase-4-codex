@@ -55,7 +55,10 @@ function TeachersStackNavigator() {
       <TeachersStack.Screen
         name={ROUTES.teacherForm}
         component={TeacherFormScreen}
-        options={{ title: 'Cadastro docente' }}
+        options={({ route }) => {
+          const params = route.params as { teacherId?: string } | undefined;
+          return { title: params?.teacherId ? 'Editar docente' : 'Cadastro docente' };
+        }}
       />
     </TeachersStack.Navigator>
   );
