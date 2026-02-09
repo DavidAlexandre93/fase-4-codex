@@ -7,6 +7,14 @@ export interface Post {
   description?: string;
   author: string;
   createdAt?: string;
+  comments?: PostComment[];
+}
+
+export interface PostComment {
+  id?: string;
+  author?: string;
+  content: string;
+  createdAt?: string;
 }
 
 export interface Teacher {
