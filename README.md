@@ -142,6 +142,10 @@ Para compor a entrega final da disciplina:
 2. **Vídeo (até 15 min)** demonstrando fluxo, autenticação, permissões e CRUDs.
 3. **Documento técnico** com arquitetura, decisões de implementação e desafios encontrados.
 
+## 📘 Documento solicitado (arquitetura, uso e desafios)
+
+O documento completo está em `mobile/DOCUMENTACAO.md`.
+
 ---
 
 ## 📄 Licença
