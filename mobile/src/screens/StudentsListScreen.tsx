@@ -2,29 +2,17 @@ import React, { useCallback, useState } from 'react';
 import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { apiRequest } from '@/api/client';
+import React, { useContext, useEffect } from 'react';
+import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TeacherOnly } from '@/components/TeacherOnly';
-import type { Student } from '@/types';
+import { AppDataContext } from '@/context/AppDataContext';
 import { ROUTES } from '@/utils/constants';
-
-interface PaginatedResponse<T> {
-  data: T[];
-  page: number;
-  totalPages: number;
-}
 
 export function StudentsListScreen() {
   const navigation = useNavigation();
-  const [students, setStudents] = useState<Student[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
-  async function loadStudents(currentPage: number) {
-    const response = await apiRequest<PaginatedResponse<Student>>(`/students?page=${currentPage}`);
-    setStudents(response.data);
-    setPage(response.page);
-    setTotalPages(response.totalPages);
-  }
+  const { students, loadStudents, deleteStudent, studentsPage, studentsTotalPages } = useContext(AppDataContext);
 
   useFocusEffect(
     useCallback(() => {
@@ -50,48 +38,60 @@ export function StudentsListScreen() {
         }
       }
     ]);
+  useEffect(() => {
+    loadStudents(1);
+  }, [loadStudents]);
+
+  async function handleDelete(studentId: string) {
+    try {
+      await deleteStudent(studentId);
+      Alert.alert('Alunos', 'Aluno removido com sucesso.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao remover aluno.';
+      Alert.alert('Alunos', message);
+    }
   }
 
   return (
     <TeacherOnly>
       <SafeAreaView style={styles.container}>
-      <PrimaryButton label="Cadastrar aluno" onPress={() => navigation.navigate(ROUTES.studentForm as never)} />
-      <FlatList
-        data={students}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.title}>{item.name}</Text>
-            <Text style={styles.subtitle}>{item.email}</Text>
-            <View style={styles.actions}>
-              <PrimaryButton
-                label="Editar"
-                variant="outline"
-                onPress={() => navigation.navigate(ROUTES.studentForm as never, { studentId: item.id } as never)}
-              />
-              <PrimaryButton label="Excluir" variant="danger" onPress={() => handleDelete(item.id)} />
+        <PrimaryButton label="Cadastrar aluno" onPress={() => (navigation as any).navigate(ROUTES.studentForm as never)} />
+        <FlatList
+          data={students}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Text style={styles.title}>{item.name}</Text>
+              <Text style={styles.subtitle}>{item.email}</Text>
+              <View style={styles.actions}>
+                <PrimaryButton
+                  label="Editar"
+                  variant="outline"
+                  onPress={() => (navigation as any).navigate(ROUTES.studentForm as never, { studentId: item.id } as never)}
+                />
+                <PrimaryButton label="Excluir" variant="danger" onPress={() => handleDelete(item.id)} />
+              </View>
             </View>
-          </View>
-        )}
-        ListEmptyComponent={<Text style={styles.empty}>Nenhum aluno encontrado.</Text>}
-      />
-      <View style={styles.pagination}>
-        <PrimaryButton
-          label="Anterior"
-          variant="outline"
-          onPress={() => loadStudents(Math.max(1, page - 1))}
-          disabled={page <= 1}
+          )}
+          ListEmptyComponent={<Text style={styles.empty}>Nenhum aluno encontrado.</Text>}
         />
-        <Text style={styles.pageLabel}>
-          Página {page} de {totalPages}
-        </Text>
-        <PrimaryButton
-          label="Próxima"
-          variant="outline"
-          onPress={() => loadStudents(Math.min(totalPages, page + 1))}
-          disabled={page >= totalPages}
-        />
-      </View>
+        <View style={styles.pagination}>
+          <PrimaryButton
+            label="Anterior"
+            variant="outline"
+            onPress={() => loadStudents(Math.max(1, studentsPage - 1))}
+            disabled={studentsPage <= 1}
+          />
+          <Text style={styles.pageLabel}>
+            Página {studentsPage} de {studentsTotalPages}
+          </Text>
+          <PrimaryButton
+            label="Próxima"
+            variant="outline"
+            onPress={() => loadStudents(Math.min(studentsTotalPages, studentsPage + 1))}
+            disabled={studentsPage >= studentsTotalPages}
+          />
+        </View>
       </SafeAreaView>
     </TeacherOnly>
   );

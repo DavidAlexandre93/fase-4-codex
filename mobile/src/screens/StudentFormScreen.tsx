@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import { TeacherOnly } from '@/components/TeacherOnly';
-import type { Student } from '@/types';
+import { AppDataContext } from '@/context/AppDataContext';
 
 interface StudentFormParams {
   studentId?: string;
@@ -14,6 +13,7 @@ interface StudentFormParams {
 export function StudentFormScreen() {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<Record<string, StudentFormParams>, string>>();
+  const { getStudent, createStudent, updateStudent } = useContext(AppDataContext);
   const { studentId } = (route.params ?? {}) as StudentFormParams;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -22,28 +22,22 @@ export function StudentFormScreen() {
   useEffect(() => {
     async function loadStudent() {
       if (!studentId) return;
-      const data = await apiRequest<Student>(`/students/${studentId}`);
+      const data = await getStudent(studentId);
       setName(data.name);
       setEmail(data.email);
       setCourse(data.course ?? '');
     }
 
     loadStudent();
-  }, [studentId]);
+  }, [studentId, getStudent]);
 
   async function handleSubmit() {
     try {
       if (studentId) {
-        await apiRequest(`/students/${studentId}`, {
-          method: 'PUT',
-          body: JSON.stringify({ name, email, course })
-        });
+        await updateStudent(studentId, { name, email, course });
         Alert.alert('Alunos', 'Aluno atualizado com sucesso.');
       } else {
-        await apiRequest('/students', {
-          method: 'POST',
-          body: JSON.stringify({ name, email, course })
-        });
+        await createStudent({ name, email, course });
         Alert.alert('Alunos', 'Aluno cadastrado com sucesso.');
       }
       navigation.goBack();
@@ -56,10 +50,10 @@ export function StudentFormScreen() {
   return (
     <TeacherOnly>
       <SafeAreaView style={styles.container}>
-      <TextField label="Nome" value={name} onChangeText={setName} placeholder="Nome completo" />
-      <TextField label="Email" value={email} onChangeText={setEmail} placeholder="email@instituicao.edu" />
-      <TextField label="Curso" value={course} onChangeText={setCourse} placeholder="Curso" />
-      <PrimaryButton label={studentId ? 'Salvar alterações' : 'Cadastrar'} onPress={handleSubmit} />
+        <TextField label="Nome" value={name} onChangeText={setName} placeholder="Nome completo" />
+        <TextField label="Email" value={email} onChangeText={setEmail} placeholder="email@instituicao.edu" />
+        <TextField label="Curso" value={course} onChangeText={setCourse} placeholder="Curso" />
+        <PrimaryButton label={studentId ? 'Salvar alterações' : 'Cadastrar'} onPress={handleSubmit} />
       </SafeAreaView>
     </TeacherOnly>
   );
