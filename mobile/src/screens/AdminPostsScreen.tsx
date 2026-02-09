@@ -11,9 +11,12 @@ import {
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { apiRequest } from '@/api/client';
+import React, { useContext, useEffect } from 'react';
+import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TeacherOnly } from '@/components/TeacherOnly';
-import type { Post } from '@/types';
+import { AppDataContext } from '@/context/AppDataContext';
 import { ROUTES } from '@/utils/constants';
 
 export function AdminPostsScreen() {
@@ -31,6 +34,12 @@ export function AdminPostsScreen() {
       Alert.alert('Postagens', message);
     }
   }, []);
+  const navigation = useNavigation();
+  const { posts, loadPosts, deletePost } = useContext(AppDataContext);
+
+  useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,7 +56,7 @@ export function AdminPostsScreen() {
 
   async function handleDelete(postId: string) {
     try {
-      await apiRequest(`/posts/${postId}`, { method: 'DELETE' });
+      await deletePost(postId);
       Alert.alert('Postagens', 'Post removido com sucesso.');
       await loadPosts();
     } catch (error) {
@@ -102,6 +111,25 @@ export function AdminPostsScreen() {
             ListEmptyComponent={<Text style={styles.empty}>Nenhuma postagem cadastrada.</Text>}
           />
         )}
+        <FlatList
+          data={posts}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.subtitle}>Por {item.author}</Text>
+              <View style={styles.actions}>
+                <PrimaryButton
+                  label="Editar"
+                  variant="outline"
+                  onPress={() => (navigation as any).navigate(ROUTES.postEdit as never, { postId: item.id } as never)}
+                />
+                <PrimaryButton label="Excluir" variant="danger" onPress={() => handleDelete(item.id)} />
+              </View>
+            </View>
+          )}
+          ListEmptyComponent={<Text style={styles.empty}>Nenhuma postagem cadastrada.</Text>}
+        />
       </SafeAreaView>
     </TeacherOnly>
   );
