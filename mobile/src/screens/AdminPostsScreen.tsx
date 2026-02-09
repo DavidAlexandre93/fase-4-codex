@@ -1,18 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  RefreshControl,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View
-} from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { apiRequest } from '@/api/client';
-import React, { useContext, useEffect } from 'react';
-import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TeacherOnly } from '@/components/TeacherOnly';
@@ -20,37 +7,22 @@ import { AppDataContext } from '@/context/AppDataContext';
 import { ROUTES } from '@/utils/constants';
 
 export function AdminPostsScreen() {
-  const navigation = useNavigation<any>();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const navigation = useNavigation();
+  const { posts, loadPosts, deletePost } = useContext(AppDataContext);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const loadPosts = useCallback(async () => {
-    try {
-      const data = await apiRequest<Post[]>('/posts');
-      setPosts(data);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Erro ao carregar postagens.';
-      Alert.alert('Postagens', message);
-    }
-  }, []);
-  const navigation = useNavigation();
-  const { posts, loadPosts, deletePost } = useContext(AppDataContext);
-
-  useEffect(() => {
-    loadPosts();
+  const refreshList = useCallback(async () => {
+    await loadPosts();
   }, [loadPosts]);
 
-  useFocusEffect(
-    useCallback(() => {
-      setIsLoading(true);
-      loadPosts().finally(() => setIsLoading(false));
-    }, [loadPosts])
-  );
+  useEffect(() => {
+    refreshList().finally(() => setIsLoading(false));
+  }, [refreshList]);
 
   async function handleRefresh() {
     setIsRefreshing(true);
-    await loadPosts();
+    await refreshList();
     setIsRefreshing(false);
   }
 
@@ -58,7 +30,7 @@ export function AdminPostsScreen() {
     try {
       await deletePost(postId);
       Alert.alert('Postagens', 'Post removido com sucesso.');
-      await loadPosts();
+      await refreshList();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao remover post.';
       Alert.alert('Postagens', message);
@@ -67,17 +39,8 @@ export function AdminPostsScreen() {
 
   function confirmDelete(postId: string, postTitle: string) {
     Alert.alert('Excluir postagem', `Deseja excluir a postagem "${postTitle}"?`, [
-      {
-        text: 'Cancelar',
-        style: 'cancel'
-      },
-      {
-        text: 'Excluir',
-        style: 'destructive',
-        onPress: () => {
-          handleDelete(postId);
-        }
-      }
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Excluir', style: 'destructive', onPress: () => handleDelete(postId) }
     ]);
   }
 
@@ -101,7 +64,7 @@ export function AdminPostsScreen() {
                   <PrimaryButton
                     label="Editar"
                     variant="outline"
-                    onPress={() => navigation.navigate(ROUTES.postEdit as never, { postId: item.id } as never)}
+                    onPress={() => (navigation as any).navigate(ROUTES.postEdit as never, { postId: item.id } as never)}
                   />
                   <PrimaryButton label="Excluir" variant="danger" onPress={() => confirmDelete(item.id, item.title)} />
                 </View>
@@ -111,25 +74,6 @@ export function AdminPostsScreen() {
             ListEmptyComponent={<Text style={styles.empty}>Nenhuma postagem cadastrada.</Text>}
           />
         )}
-        <FlatList
-          data={posts}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.subtitle}>Por {item.author}</Text>
-              <View style={styles.actions}>
-                <PrimaryButton
-                  label="Editar"
-                  variant="outline"
-                  onPress={() => (navigation as any).navigate(ROUTES.postEdit as never, { postId: item.id } as never)}
-                />
-                <PrimaryButton label="Excluir" variant="danger" onPress={() => handleDelete(item.id)} />
-              </View>
-            </View>
-          )}
-          ListEmptyComponent={<Text style={styles.empty}>Nenhuma postagem cadastrada.</Text>}
-        />
       </SafeAreaView>
     </TeacherOnly>
   );

@@ -1,21 +1,17 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Alert, FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { PostCard } from '@/components/PostCard';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
+import { AppDataContext } from '@/context/AppDataContext';
 import { useAuth } from '@/hooks/useAuth';
-import type { Post } from '@/types';
 import { ROUTES } from '@/utils/constants';
 
 export function PostListScreen() {
   const navigation = useNavigation();
-  const { hasRole, logout, user } = useContext(AuthContext);
+  const { hasRole, logout, user } = useAuth();
   const { posts, loadPosts } = useContext(AppDataContext);
-  const { hasRole } = useAuth();
-  const [posts, setPosts] = useState<Post[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -42,6 +38,7 @@ export function PostListScreen() {
 
   const filteredPosts = useMemo(() => {
     if (!query.trim()) return posts;
+
     const lowerQuery = query.toLowerCase();
     return posts.filter((post) =>
       [post.title, post.content, post.author, post.description]
@@ -61,10 +58,6 @@ export function PostListScreen() {
           )}
           <PrimaryButton label="Sair" variant="outline" onPress={handleLogout} />
         </View>
-        <Text style={styles.heading}>Página principal</Text>
-        {hasRole('teacher') && (
-          <PrimaryButton label="Nova postagem" onPress={() => (navigation as any).navigate(ROUTES.postCreate as never)} />
-        )}
       </View>
       <TextField label="Buscar" value={query} onChangeText={setQuery} placeholder="Digite palavras-chave" autoCapitalize="none" />
       <FlatList
