@@ -1,3 +1,7 @@
+import React, { useCallback, useState } from 'react';
+import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { apiRequest } from '@/api/client';
 import React, { useContext, useEffect } from 'react';
 import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -10,6 +14,30 @@ export function StudentsListScreen() {
   const navigation = useNavigation();
   const { students, loadStudents, deleteStudent, studentsPage, studentsTotalPages } = useContext(AppDataContext);
 
+  useFocusEffect(
+    useCallback(() => {
+      loadStudents(1);
+    }, [])
+  );
+
+  async function handleDelete(studentId: string) {
+    Alert.alert('Alunos', 'Deseja realmente excluir este aluno?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await apiRequest(`/students/${studentId}`, { method: 'DELETE' });
+            Alert.alert('Alunos', 'Aluno removido com sucesso.');
+            loadStudents(page);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Erro ao remover aluno.';
+            Alert.alert('Alunos', message);
+          }
+        }
+      }
+    ]);
   useEffect(() => {
     loadStudents(1);
   }, [loadStudents]);
