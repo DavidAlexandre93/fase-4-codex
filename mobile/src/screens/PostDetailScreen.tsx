@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
+import type { Post, PostComment } from '@/types';
+import { AppDataContext } from '@/context/AppDataContext';
 import type { Post } from '@/types';
 
 interface PostDetailParams {
@@ -12,31 +14,56 @@ interface PostDetailParams {
 
 export function PostDetailScreen() {
   const route = useRoute<RouteProp<Record<string, PostDetailParams>, string>>();
+  const { getPost } = useContext(AppDataContext);
   const { postId } = route.params as PostDetailParams;
   const [post, setPost] = useState<Post | null>(null);
+  const [comments, setComments] = useState<PostComment[]>([]);
   const [comment, setComment] = useState('');
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   useEffect(() => {
     async function loadPost() {
-      const data = await apiRequest<Post>(`/posts/${postId}`);
+      try {
+        const data = await apiRequest<Post>(`/posts/${postId}`);
+        setPost(data);
+        setComments(data.comments ?? []);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Erro ao carregar post.';
+        Alert.alert('Post', message);
+      }
+      const data = await getPost(postId);
       setPost(data);
     }
 
     loadPost();
-  }, [postId]);
+  }, [postId, getPost]);
 
   async function handleComment() {
-    if (!comment.trim()) return;
+    const trimmedComment = comment.trim();
+    if (!trimmedComment) return;
+
     try {
-      await apiRequest(`/posts/${postId}/comments`, {
+      setIsSubmittingComment(true);
+      const createdComment = await apiRequest<PostComment>(`/posts/${postId}/comments`, {
         method: 'POST',
-        body: JSON.stringify({ content: comment })
+        body: JSON.stringify({ content: trimmedComment })
       });
+
+      setComments((currentComments) => {
+        if (createdComment?.content) {
+          return [...currentComments, createdComment];
+        }
+
+        return [...currentComments, { content: trimmedComment }];
+      });
+
       setComment('');
       Alert.alert('Comentário', 'Comentário enviado com sucesso.');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao enviar comentário.';
       Alert.alert('Comentário', message);
+    } finally {
+      setIsSubmittingComment(false);
     }
   }
 
@@ -56,8 +83,21 @@ export function PostDetailScreen() {
         <Text style={styles.body}>{post.content}</Text>
         <View style={styles.commentBox}>
           <Text style={styles.sectionTitle}>Comentários</Text>
+          {comments.length > 0 ? (
+            comments.map((item, index) => (
+              <View key={item.id ?? `${item.content}-${index}`} style={styles.commentItem}>
+                <Text style={styles.commentAuthor}>{item.author || 'Leitor'}</Text>
+                <Text style={styles.commentText}>{item.content}</Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.emptyComments}>Ainda não há comentários.</Text>
+          )}
           <TextField label="Adicionar comentário" value={comment} onChangeText={setComment} multiline />
-          <PrimaryButton label="Enviar comentário" onPress={handleComment} />
+          <PrimaryButton
+            label={isSubmittingComment ? 'Enviando...' : 'Enviar comentário'}
+            onPress={handleComment}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -101,5 +141,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12
+  },
+  commentItem: {
+    marginBottom: 12,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC'
+  },
+  commentAuthor: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#334155',
+    marginBottom: 4
+  },
+  commentText: {
+    color: '#1E293B'
+  },
+  emptyComments: {
+    marginBottom: 12,
+    color: '#64748B'
   }
 });
