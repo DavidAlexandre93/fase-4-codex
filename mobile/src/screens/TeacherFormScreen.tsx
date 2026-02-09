@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { apiRequest } from '@/api/client';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -56,10 +56,21 @@ export function TeacherFormScreen() {
   return (
     <TeacherOnly>
       <SafeAreaView style={styles.container}>
+      {!teacherId && (
+        <View style={styles.header}>
+          <Text style={styles.title}>Criação de professores</Text>
+          <Text style={styles.description}>
+            Formulário para que professores possam cadastrar outros professores.
+          </Text>
+        </View>
+      )}
       <TextField label="Nome" value={name} onChangeText={setName} placeholder="Nome completo" />
       <TextField label="Email" value={email} onChangeText={setEmail} placeholder="email@instituicao.edu" />
       <TextField label="Departamento" value={department} onChangeText={setDepartment} placeholder="Departamento" />
-      <PrimaryButton label={teacherId ? 'Salvar alterações' : 'Cadastrar'} onPress={handleSubmit} />
+      <PrimaryButton
+        label={teacherId ? 'Salvar alterações' : 'Enviar cadastro ao servidor'}
+        onPress={handleSubmit}
+      />
       </SafeAreaView>
     </TeacherOnly>
   );
@@ -70,5 +81,18 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#F1F5F9'
+  },
+  header: {
+    marginBottom: 16,
+    gap: 6
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0F172A'
+  },
+  description: {
+    color: '#475569',
+    lineHeight: 20
   }
 });
