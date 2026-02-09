@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { getAuthenticatedUser, loginRequest } from '@/api/auth';
 import type { AuthUser, Role } from '@/types';
+import { STORAGE_KEYS } from '@/utils/constants';
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -26,41 +27,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadStoredSession() {
-      const storedToken = await AsyncStorage.getItem('token');
-      const storedUser = await AsyncStorage.getItem('user');
+    let isMounted = true;
 
-      if (storedToken && storedUser) {
-        const parsedUser = JSON.parse(storedUser) as Omit<AuthUser, 'token'>;
+    async function loadStoredSession() {
+      try {
+        const storedToken = await AsyncStorage.getItem(STORAGE_KEYS.token);
+        const storedUser = await AsyncStorage.getItem(STORAGE_KEYS.user);
+
+        if (!storedToken || !storedUser) {
+          return;
+        }
+
+        let parsedUser: Omit<AuthUser, 'token'>;
+
+        try {
+          parsedUser = JSON.parse(storedUser) as Omit<AuthUser, 'token'>;
+        } catch {
+          await AsyncStorage.multiRemove([STORAGE_KEYS.token, STORAGE_KEYS.user]);
+          return;
+        }
 
         try {
           const refreshedUser = await getAuthenticatedUser();
+
+          if (!isMounted) {
+            return;
+          }
+
           setUser({ ...refreshedUser, token: storedToken });
           await AsyncStorage.setItem(
-            'user',
+            STORAGE_KEYS.user,
             JSON.stringify({ id: refreshedUser.id, name: refreshedUser.name, role: refreshedUser.role })
           );
         } catch {
-          setUser({ ...parsedUser, token: storedToken });
+          if (isMounted) {
+            setUser({ ...parsedUser, token: storedToken });
+          }
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
         }
       }
-      setIsLoading(false);
     }
 
     loadStoredSession();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     const authUser = await loginRequest(email, password);
 
-    await AsyncStorage.setItem('token', authUser.token);
-    await AsyncStorage.setItem('user', JSON.stringify({ id: authUser.id, name: authUser.name, role: authUser.role }));
+    await AsyncStorage.setItem(STORAGE_KEYS.token, authUser.token);
+    await AsyncStorage.setItem(
+      STORAGE_KEYS.user,
+      JSON.stringify({ id: authUser.id, name: authUser.name, role: authUser.role })
+    );
     setUser(authUser);
   }, []);
 
   const logout = useCallback(async () => {
-    await AsyncStorage.removeItem('token');
-    await AsyncStorage.removeItem('user');
+    await AsyncStorage.multiRemove([STORAGE_KEYS.token, STORAGE_KEYS.user]);
     setUser(null);
   }, []);
 

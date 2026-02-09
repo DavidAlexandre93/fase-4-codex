@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Alert, FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { PostCard } from '@/components/PostCard';
@@ -15,14 +15,14 @@ export function PostListScreen() {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function refreshPosts() {
+  const refreshPosts = useCallback(async () => {
     try {
       setLoading(true);
       await loadPosts();
     } finally {
       setLoading(false);
     }
-  }
+  }, [loadPosts]);
 
   async function handleLogout() {
     try {
@@ -34,7 +34,7 @@ export function PostListScreen() {
 
   useEffect(() => {
     refreshPosts();
-  }, []);
+  }, [refreshPosts]);
 
   const filteredPosts = useMemo(() => {
     if (!query.trim()) return posts;

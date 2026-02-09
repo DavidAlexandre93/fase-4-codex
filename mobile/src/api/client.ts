@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_BASE_URL } from '@/utils/constants';
+import { API_BASE_URL, STORAGE_KEYS } from '@/utils/constants';
 
 async function getAuthHeaders() {
-  const token = await AsyncStorage.getItem('token');
+  const token = await AsyncStorage.getItem(STORAGE_KEYS.token);
   return token ? { Authorization: `Bearer ${token}` } : undefined;
 }
 
@@ -11,7 +11,10 @@ export async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const headers = new Headers(options.headers);
-  headers.set('Content-Type', 'application/json');
+
+  if (options.body && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
 
   const authHeaders = await getAuthHeaders();
   if (authHeaders?.Authorization) {
