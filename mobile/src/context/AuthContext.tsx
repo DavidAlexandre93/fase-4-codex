@@ -55,13 +55,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       body: JSON.stringify({ email, password })
     });
 
-    if (response.user.role !== 'teacher') {
-      await AsyncStorage.removeItem('token');
-      await AsyncStorage.removeItem('user');
-      setUser(null);
-      throw new Error('Apenas professores podem acessar o aplicativo mobile.');
-    }
-
     const authUser: AuthUser = {
       id: response.user.id,
       name: response.user.name,

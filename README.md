@@ -206,8 +206,8 @@ mobile/
 
 ### 4) Fluxo discente (`student`)
 
-- Acesso somente às áreas de leitura de conteúdo.
-- Sem opções de criação, edição ou exclusão administrativa.
+- Acesso às áreas de leitura de conteúdo (Posts e detalhe).
+- Sem opções de criação, edição ou exclusão administrativa, que permanecem restritas a docentes.
 
 ---
 
