@@ -6,6 +6,7 @@ import type { AuthUser, Role } from '@/types';
 interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
+  isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   hasRole: (role: Role) => boolean;
@@ -14,6 +15,7 @@ interface AuthContextValue {
 export const AuthContext = createContext<AuthContextValue>({
   user: null,
   isLoading: true,
+  isAuthenticated: false,
   login: async () => {},
   logout: async () => {},
   hasRole: () => false
@@ -74,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ user, isLoading, login, logout, hasRole }),
+    () => ({ user, isLoading, isAuthenticated: Boolean(user), login, logout, hasRole }),
     [user, isLoading, login, logout, hasRole]
   );
 
