@@ -78,6 +78,7 @@ Scripts disponíveis em `mobile/package.json`:
 - `npm run validate` → executa checagem de tipos TypeScript.
 - `npm test` → compila artefatos de teste e executa suíte automatizada.
 - `npm run validate:full` → executa validação completa (tipagem + testes).
+- `npm run lint` → executa lint estático com ESLint para fontes TypeScript/React Native.
 
 ### 3) Conexão com a API
 
@@ -101,6 +102,7 @@ export const API_BASE_URL = 'http://192.168.0.10:3000';
 3. Inicie o app com `npm run start`.
 4. Faça login com usuário válido.
 5. Abra a aba de posts e valide carregamento da lista.
+6. Para validação em dispositivo físico com backend real, siga `mobile/MANUAL_TESTE_DISPOSITIVO.md`.
 
 ---
 
