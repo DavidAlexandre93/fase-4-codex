@@ -75,6 +75,9 @@ Scripts disponíveis em `mobile/package.json`:
 - `npm run android` → abre no emulador Android.
 - `npm run ios` → abre no simulador iOS (macOS).
 - `npm run web` → executa a versão web (quando disponível).
+- `npm run validate` → executa checagem de tipos TypeScript.
+- `npm test` → compila artefatos de teste e executa suíte automatizada.
+- `npm run validate:full` → executa validação completa (tipagem + testes).
 
 ### 3) Conexão com a API
 
@@ -94,9 +97,10 @@ export const API_BASE_URL = 'http://192.168.0.10:3000';
 ### 4) Validação rápida pós-setup
 
 1. Inicie o back-end da disciplina.
-2. Inicie o app com `npm run start`.
-3. Faça login com usuário válido.
-4. Abra a aba de posts e valide carregamento da lista.
+2. Execute `npm run validate:full` para garantir tipagem e testes automatizados.
+3. Inicie o app com `npm run start`.
+4. Faça login com usuário válido.
+5. Abra a aba de posts e valide carregamento da lista.
 
 ---
 
